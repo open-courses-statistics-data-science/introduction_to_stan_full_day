@@ -1,0 +1,291 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{natbib}
+\title{Introduction to Stan: problem set}
+\date{}
+\usepackage{caption}
+\captionsetup{font=footnotesize}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{multimedia}
+\usepackage{animate}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage[makeroom]{cancel}
+\newtheorem{problem}{Problem}[section]
+\usepackage{bbm}
+\author{Ben Lambert}
+\usepackage{listings}
+\usepackage{minted}
+
+\begin{document}
+\maketitle
+
+\section{Stan entry level: discoveries data}
+The file ``discoveries.csv" contains data on the numbers of ``great'' inventions and scientific discoveries ($X_t$) in each year from 1860 to 1959 \citep{discoveries}. In this question you will develop a model to explain the variation in scientific inventions across time. The simplest model here is to assume that \textbf{a.} one discovery occurs independently of all others, and \textbf{b.} the rate of occurrence of discoveries is the same in all years. Since the data is discrete, these assumptions suggests use of a Poisson model:
+
+\begin{equation}
+X_t\sim \text{Poisson}(\lambda)
+\end{equation}
+
+\begin{problem}
+Open an editor and create a file called ``discoveries.stan'' in your working directory. In the file create three parameter blocks:
+	
+\begin{minted}{stan}
+data {
+	
+}
+parameters {
+	
+}
+model {
+	
+}
+\end{minted}	
+\end{problem}
+
+\begin{problem}
+Fill in the data and parameter blocks for the above model.
+\end{problem}
+
+
+\begin{problem}
+	Using a log-normal(2,1)  prior for $\lambda$ code up the ``model'' block, making sure to save your file afterwards.
+\end{problem}
+
+\begin{problem}
+	Open your statistical software (R, python, matlab, etc.) and load any packages necessary to use Stan. (Hint: in R this is done by using ``library(rstan)'; in Python this is done using ``import pystan''.)
+\end{problem}
+
+\begin{problem}
+Load the ``discoveries.csv" data and graph the data. What does this suggest about our model's assumptions?
+\end{problem}
+
+\begin{problem}
+Load the data into your software then put it into a structure that can be passed to Stan. (Hint: in R create a list of the data; in Python create a dictionary where the `key' for each variable is the desired variable name.)
+\end{problem}
+
+\begin{problem}
+Fit your model using Stan, with 4 chains, each with a sample size of 1000, and a warm-up of 500 samples. Set seed=1 to allow reproducibility of your results. Store your result in an object called ``fit''.
+\end{problem}
+
+\begin{problem}
+Diagnose whether your model has converged by printing ``fit''.
+\end{problem}
+
+\begin{problem}
+For your sample what is the equivalent number of samples for an independent sampler?
+\end{problem}
+
+\begin{problem}
+Find the central posterior 80\% credible interval for $\lambda$.
+\end{problem}
+
+\begin{problem}
+	Draw a histogram of your posterior sample for $\lambda$.
+\end{problem}
+
+\begin{problem}
+Create a ``generated quantities'' block in your Stan file, and use it to sample from the posterior predictive distribution (Hint: use the function ``poisson\_rng'' to generate independent samples from your lambda).
+\end{problem}
+
+\begin{problem}
+Carry out appropriate posterior predictive checks to evaluate your model.
+\end{problem}
+
+\begin{problem}
+A more robust sampling distribution is a negative binomial model:
+
+\begin{equation}
+X_i \sim \text{negative-binomial}(\mu,\kappa)
+\end{equation}
+
+where $\mu$ is the mean number of discoveries per year, and $var(X) = \mu + \frac{\mu^2}{\kappa}$. Here $\kappa$ measures the degree of over-dispersion of your model; specifically if $\kappa\uparrow$ then over-dispersion$\downarrow$.  
+
+Write a new stan file called ``discoveries\_negbin.stan'' that uses this new sampling model (Hint: use the Stan manual section on discrete distributions to search for the correct negative binomial function name; be careful there are two different parameterisations of this function available in Stan!) Assume that we are using the following priors:
+
+\begin{align}
+\mu&\sim \text{log-normal}(2,1)\\
+\kappa&\sim \text{log-normal}(2,1)\\
+\end{align}
+	
+Draw 1000 samples across 4 chains for your new model. Has it converged to the posterior? 
+\end{problem}
+
+\begin{problem}
+Carry out posterior predictive checks on the new model. What do you conclude about the use of a negative binomial here versus the simpler Poisson?
+\end{problem}
+
+\begin{problem}
+Find the central posterior 80\% credible interval for the new mean rate of discoveries $\mu$. How does it compare with your results from the Poisson model? Why is this the case?
+\end{problem}
+
+\begin{problem}
+(Optional) Calculate the autocorrelation in the residuals between the actual and simulated data series. What do these suggest about our current model?
+\end{problem}
+
+\begin{problem}
+Optional: following on from the above suggest an alternative model formulation.
+\end{problem}
+
+
+\section{Stan entry level : Hungover holiday regressions}
+The data in file ``hangover.csv'' contains a series of Google Trends estimates of the search traffic volume for the term ``hangover cure'' in the UK between February 2012 to January 2016. The idea behind this problem is to determine how much more hungover are people in the ``holiday season'' period, defined here as the period between 10th December and 7th January, than the average for the rest of the year.
+
+\begin{problem}
+	Graph the search volume over time, and try to observe the uplift in search volume around the holiday season.
+\end{problem}
+
+\begin{problem}
+The variable ``holiday'' is a type of indicator variable that takes the value 1 if the given week is \textit{all} holiday season, 0 if it contains none of it, and $0<X<1$ for a week that contains a fraction $X$ of days that fall in the holiday season. Graph this variable over time so that you understand how it works.
+\end{problem}
+
+\begin{problem}
+A simple linear regression is proposed of the form,
+
+\begin{equation}
+V_t\sim \text{normal}(\beta_0+\beta_1 h_t,\sigma)
+\end{equation}
+
+where $V_t$ is the search volume in week $t$ and $h_t$ is the holiday season indicator variable. Interpret $\beta_0$ and $\beta_1$ and explain how these can be used to estimate the increased percentage of hangovers in the holiday season.
+\end{problem}
+
+\begin{problem}
+Assuming $\beta_i\sim N(0,50)$ and $\sigma\sim \text{half-normal}(0,10)$ priors write a Stan model to estimate the percentage increase in hangoverness over the holiday period.
+\end{problem}
+
+\section{Stan middle level: coding up a bespoke probability density}
+In the file ``survival.csv'' there are data for a variable $Y$ that we believe comes from a probability distribution $p(Y) =\frac{\sqrt[3]{b}}{\Gamma\left(\frac{4}{3}\right)} exp(-b Y^3)$ where $b>0$ is a parameter of interest. In this question we are going to write a Stan program to estimate the parameter $b$ even though this distribution is not amongst Stan's implemented distributions.
+
+\begin{problem}
+	Explain what is meant by the following statement in Stan,
+	
+	\begin{minted}{Stan}
+	theta ~ beta(1,1);
+	\end{minted}
+	
+	In particular, explain why this is equivalent to the following,
+	
+	\begin{minted}{Stan}
+	target += beta_lpf(theta|1,1);
+	\end{minted}
+	
+	where \mintinline{Stan}{target} is a Stan variable that stores the overall log-probability, and \mintinline{Stan}{+=} increments \mintinline{Stan}{target} by an amount corresponding to the RHS.
+	
+\end{problem}
+
+
+\begin{problem}
+By hand work out an expression for the log-probability for a density $p(Y) =\frac{\sqrt[3]{b}}{\Gamma\left(\frac{4}{3}\right)} exp(-b Y^3)$.
+\end{problem}
+
+\begin{problem}
+Write a Stan function that for a given value of $y$ and $b$ calculates the log probability (ignoring any constant terms). Hint: Stan functions are declared as follows,
+	
+\begin{minted}{Stan}
+functions{
+  real anExample(real a, real b){
+    ...
+    return(something);
+  }
+}
+\end{minted}
+	
+where in this example the function takes two reals as inputs and outputs something of type real.
+\end{problem}
+
+\begin{problem}
+Use your previously created function to write a Stan program that estimates $b$, and then use it to do so with the $y$ series contained within ``survival.csv''. Hint: Stan functions must be declared at the top of a Stan program.
+\end{problem}
+
+\section{Stan advanced level: is a tumour benign or malignant?}
+Suppose that if a tumour is benign the result of a clinical test for the disease for individual $i$ is $X_i\sim \text{binomial}(20,\theta_b)$, whereas if the tumour is malignant $X_i\sim \text{binomial}(20,\theta_m)$, where $\theta_b < \theta_m$. Suppose that we collect data on 10 patients' scores on this clinical test $X=\{4,18,6,4,5,6,4,6,16,7\}$ and would like to infer the disease status for each individual, as well as the parameters $(\theta_b,\theta_m)$.
+
+\begin{problem}
+Write down in pseudo-code the full model, where we suppose that we use uniform priors on $(\theta_b,\theta_m)$ and discrete uniform priors on the disease status $s_i$ of individual $i$.
+\end{problem}
+
+\begin{problem}
+Assuming that $s_i\in[1,2]$ is the disease status of each individual (1 corresponding to a benign growth, and 2 to a malignant one), use the \mintinline{Stan}{transformed parameters} block to calculate the log probability of each individual's data. Hint: this will be a 10 $\times$ 2 matrix, where the 2 corresponds to each possible disease status.
+\end{problem}
+
+\begin{problem}
+The disease status of each individual $s_i\in[1,2]$ is a discrete variable, and because Stan does not support discrete parameters directly it is not as straightforward to code up these problems as for continuous parameter problems. The way that to do this is by marginalising out $s_i$ from the joint distribution,
+	
+\begin{equation}
+p(\theta_b,\theta_m|X) = \sum_{s_1=1}^{2} p(\theta_b,\theta_m,s_1|X)
+\end{equation}
+where we have illustrated this for the disease status of individual 1. This then allows us to find an expression for the posterior density which we log to give $lp$, and then use \mintinline{Stan}{target+=lp} to increment the log probability. However, because we do this on the log density scale we instead do the following,
+
+\begin{align}
+\text{log} \; p(\theta_b,\theta_m|X) &= \text{log} \sum_{s_1=2}^{K} p(\theta_b,\theta_m,s_1|X)\\
+&= \text{log} \sum_{s_1=1}^{2} exp\left( log\; p(\theta_b,\theta_m,s_1|X)\right)\\
+&= \text{log}\_\text{sum}\_\text{exp}_{s_1=1}^{2}(\text{log}\; p(\theta_b,\theta_m,s_1|X))
+\end{align}
+
+where \mintinline{Stan}{log_sum_exp(.)} (a function available in Stan) is defined as,
+
+\begin{equation}
+\text{log\_sum\_exp}_{i=1}^{K} \alpha = log\; \sum_{i=1}^{K} exp(\alpha) 
+\end{equation}
+	
+and is a more numerically-stable way of doing the above calculation. Using this knowledge, write a full Stan model that implements this marginalisation, and use it to estimate $\theta_b$ and $\theta_m$. Hint: use the \mintinline{Stan}{binomial_logit_lpmf(X[i]|N,alpha[s])} function in Stan and define \mintinline{Stan}{ordered[2] alpha}, then transform from the unconstrained alpha to theta using \mintinline{Stan}{inv_logit}.
+\end{problem}
+
+\begin{problem}
+	We use the \mintinline{stan}{generated quantities} block to estimate the probabilities of state $s=1$ in each different experiment by averaging over all $L$ posterior draws,
+	
+	\begin{equation}
+	q(s=1|X) \approx \frac{1}{L} \sum_{i=1}^{L} q(s=1,\text{alpha}[s=1]|X)
+	\end{equation}
+	
+	where $q(.)$ is the un-normalised posterior density. The averaging over all posterior draws is necessary to marginalize out the alpha parameter. To normalise the posterior density we therefore divide the above by the sum of the un-normalised probability across both states,
+	
+	\begin{equation}
+	Pr(s=1|X) = \frac{q(s=1|X)}{q(s=1|X)+q(s=2|X)}
+	\end{equation} 
+	
+	Using the above knowledge add a \mintinline{stan}{generated quantities} block to your Stan model that does this, and hence estimate the probability that each individual's tumour is benign.
+\end{problem}
+
+
+\section{Stan advanced level: how many times did I flip the coin?}
+Suppose that I have a coin with $\theta$ denoting the probability of it landing heads-up. In each experiment, I flip the coin $N$ times, where $N$ is unknown to the observer and record the number of heads obtained $Y$. I repeat the experiment 10 times, each time flipping the coin the same $N$ times, and record $Y=\{9,7,11,10,10,9,8,11,9,11\}$ heads.
+
+\begin{problem}
+	Write down an expression for the likelihood, stating any assumptions you make.
+\end{problem}
+
+\begin{problem}
+Suppose that the maximum number of times the coin could be flipped is 20, and that all other (allowed) values we regard \textit{a priori} as equally probable. Further suppose that based on previous coin flipping experiences we specify a prior $\theta\sim \text{beta}(7,2)$. Write down the model as a whole (i.e. the likelihood and the priors).
+\end{problem}
+
+\begin{problem}
+This problem can be coded in Stan by marginalising out the discrete parameter $N$. The key to doing this is writing down an expression for the log-probability for each result $Y_i$ conditional on an assumed value of $N$, and $\theta$. Explain why this can be written in Stan as,
+	
+	\begin{minted}{Stan}
+	log(0.1) + binomial_lpmf(Y[i]|N[s],theta);  
+	\end{minted}
+	
+	where \mintinline{stan}{N[s]} is the sth element of a vector $N$ containing all possible values for this variable.
+	
+\end{problem}
+
+
+\begin{problem}
+	In the \mintinline{stan}{transformed parameters} block write code that calculates the log probability for each experiment and each possible value of $N$.
+\end{problem}
+
+\begin{problem}
+Write a Stan program to estimate $\theta$. Hint: in the \mintinline{Stan}{model} block use \mintinline{Stan}{target+= log_sum_exp(lp)} to marginalise out $N$ and increment the log probability. 
+\end{problem}
+
+\begin{problem}
+Use the \mintinline{Stan}{generated quantities} block to estimate the probabilities of each state.
+\end{problem}
+
+
+\bibliographystyle{plain} 
+\bibliography{bibliography}
+
+\end{document}
